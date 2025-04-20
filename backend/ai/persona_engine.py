@@ -1,4 +1,5 @@
 from typing import Literal
+from AgentServices.assistant_agent import agent
 
 # Define supported personas and their traits
 PERSONAS = {
@@ -16,15 +17,18 @@ def generate_feedback(code_snippet: str, persona: Literal["shy", "assertive", "s
 
     style = PERSONAS[persona]["style"]
 
+    prompt = (
+        f"You're a code review assistant who gives feedback in a {style} tone.\n"
+        f"Here's the code to review:\n\n"
+        f"{code_snippet}\n\n"
+        f"Please suggest improvements, best practices, or style tips. Format it as a friendly comment."
+    )
+
+    response = agent.run(prompt)
+
     # Dummy feedback for now
     feedback = (
-        f"[{persona.upper()} MODE] 🌟\n"
-        f"Code received! Analyzing with a {style} tone...\n"
-        f"\n"
-        f"// TODO: Add actual AI model or API logic here to analyze and comment\n"
-        f"def add_numbers(a, b):\n    return a + b  # Example function\n"
-        f"\n"
-        f"Suggestion: Maybe add type hints? Just a thought! 🥹 (if shy)\n"
+        f"[{persona.upper()} MODE] 🌟\n{response}"
     )
 
     return feedback
