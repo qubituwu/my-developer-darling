@@ -23,7 +23,7 @@ async def root():
 @app.post("/items/")
 async def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
     return crud.create_item(db=db, item=item)
-
+    
 @app.get("/items/")
 async def read_items(db: Session = Depends(get_db)):
     return crud.get_items(db=db)
