@@ -62,8 +62,8 @@ async function generateResponse(userInput: string, selectedText?: string): Promi
 
 function getWebviewContent(selectedText: string | undefined): string {
   const initialText = selectedText
-    ? `<p>Hewwo pookie~! 💕 You selected this code:</p><pre>${selectedText}</pre><p>Let me think reeeeal hard about it! 🧠💞</p>`
-    : `<p>Hi pookie~! 💕 I’m ready to help you with your code!</p><p>What would you like me to do? 🧑‍💻</p>`;
+    ? `<p>Hewwo pookie~! 💕 You selected this code:</p><pre>${selectedText}</pre><p>I’m ready to help you with your code! 🧠💞</p><p>What would you like help with? ^__< </p>`
+    : `<p>Hi pookie~! 💕`;
 
   return `
   <!DOCTYPE html>
