@@ -6578,7 +6578,7 @@ You: ${userInput}` : userInput;
   }
 }
 function getWebviewContent(selectedText) {
-  const initialText = selectedText ? `<p>Hewwo pookie~! \u{1F495} You selected this code:</p><pre>${selectedText}</pre><p>Let me think reeeeal hard about it! \u{1F9E0}\u{1F49E}</p>` : `<p>Hi pookie~! \u{1F495} I\u2019m ready to help you with your code!</p><p>What would you like me to do? \u{1F9D1}\u200D\u{1F4BB}</p>`;
+  const initialText = selectedText ? `<p>Hewwo pookie~! \u{1F495} You selected this code:</p><pre>${selectedText}</pre><p>I\u2019m ready to help you with your code! \u{1F9E0}\u{1F49E}</p><p>What would you like help with? ^__< </p>` : `<p>Hi pookie~! \u{1F495}`;
   return `
   <!DOCTYPE html>
   <html lang="en">
