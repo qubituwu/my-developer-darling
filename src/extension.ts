@@ -40,24 +40,25 @@ export function activate(context: vscode.ExtensionContext) {
 
 async function generateResponse(userInput: string, selectedText?: string): Promise<string> {
   try {
-    const fullInput = selectedText
-      ? `Hi Darling~! Here's the code:\n\n${selectedText}\n\nYou: ${userInput}`
-      : userInput;
-
-    const response = await fetch('http://localhost:8000/ai/chat', {
+    const persona = "silly"; // Default persona 💖
+    const response = await fetch('http://localhost:8000/ai/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: fullInput })
+      body: JSON.stringify({
+        code_snippet: selectedText || userInput,
+        persona
+      })
     });
 
     const data = await response.json();
-    const parsed = data as { response: string };
-    return parsed.response || "UwU~ Something went wrong, sowwy~ 💔";
+    const parsed = data as { feedback: string };
+    return parsed.feedback || "UwU~ Something went wrong, sowwy~ 💔";
 
   } catch (error) {
     return "Oopsies~ I couldn't reach my backend brain 😢 Make sure it's running!";
   }
 }
+
 
 
 function getWebviewContent(selectedText: string | undefined): string {

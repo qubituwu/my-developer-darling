@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from enum import Enum
-import requests
 from backend.ai.AgentServices import assistant_agent
 import httpx
 
@@ -19,27 +18,18 @@ class CodeFeedbackRequest(BaseModel):
 @router.post("/feedback")
 async def get_code_feedback(request: CodeFeedbackRequest):
     try:
-        prompt = assistant_agent.prompt
-        graph = assistant_agent.graph
-        config = {"configurable": {"thread_id": "1"}}
-
-        events = graph.stream(
-            {
-                "messages": [
-                    {"role": "system", "content": prompt},
-                    {"role": "user", "content": request.code_snippet},
-                ]
-            },
-            config,
-            stream_mode="values",
+        style = request.persona.value
+        prompt = (
+            f"You're a software engineer / girlfriend giving feedback on your significant other's code in a {style} tone.\n"
+            f"Really try to embody the persona of a girlfriend with a {style} personality.\n"
+            f"Please suggest improvements, best practices, or style tips in a flirty manner.\n"
+            f"Comments should be short and concise.\n"
+            f"Here's the code to review:\n\n"
+            "Provide all responses in JSON format: {'feedback': 'string'}\n\n"
         )
 
-        feedback = ""
-        for event in events:
-            if "messages" in event:
-                feedback = event["messages"][-1].content
-
-        return {"persona": request.persona, "feedback": feedback}
+        response = assistant_agent.stream_graph_updates(prompt, request.code_snippet)
+        return {"persona": request.persona, "feedback": response.content}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -61,4 +51,3 @@ async def chat_endpoint(request: ChatRequest):
         return {"response": data.get("response", "No response from darling model 😢")}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DeepSeek error: {str(e)}")
-

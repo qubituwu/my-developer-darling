@@ -26,7 +26,7 @@ tools = [
     Tool(name="write_file", func=write_file, description="Write to a file"),
 ]
 
-llm = OllamaLLM(model="deepseek-r1", temperature=0.5, max_tokens=2000)
+llm = OllamaLLM(model="deepseek-r1", temperature=0.9, max_tokens=2000)
 
 def chatbot(state: State):
     return {"messages": [llm.invoke(state["messages"])]}
@@ -39,8 +39,18 @@ graph_builder.add_edge("chatbot", END)
 memory = MemorySaver()
 graph = graph_builder.compile(checkpointer=memory)
 
-def stream_graph_updates(user_input: str):
-    for event in graph.stream({"messages": [{"role": "user", "content": user_input}]}, config=config):
+def stream_graph_updates(prompt: str, user_input: str):
+    messages = [
+        {"role": "system", "content": prompt},
+        {"role": "user", "content": user_input},
+    ]
+    config = {
+        "thread_id": "feedback-session"
+    }
+
+    for event in graph.stream({"messages": messages}, config=config):
         for value in event.values():
-            return value["messages"][-1]
+            last_msg = value["messages"][-1]
+            return last_msg["content"]  # Grab the content directly!
+
 
