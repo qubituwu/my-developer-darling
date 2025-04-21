@@ -1,5 +1,13 @@
 import * as vscode from 'vscode';
 
+
+const fetch = async (url: string, options?: any) => {
+  const mod = await import('node-fetch');
+  return mod.default(url, options);
+};
+
+
+
 export function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('my-developer-darling.explainCode', () => {
     const selectedText = vscode.window.activeTextEditor?.document.getText(vscode.window.activeTextEditor.selection);
@@ -15,10 +23,10 @@ export function activate(context: vscode.ExtensionContext) {
     panel.webview.html = getWebviewContent(selectedText);
 
     panel.webview.onDidReceiveMessage(
-      message => {
+      async message => {
         if (message.command === 'chat') {
           const userInput = message.text;
-          const reply = generateResponse(userInput);
+          const reply = await generateResponse(userInput, selectedText);
           panel.webview.postMessage({ command: 'reply', text: reply });
         }
       },
@@ -30,24 +38,38 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-function generateResponse(input: string): string {
-  if (/hello|hi/i.test(input)) return "Hewwo! I'm so excited to help you today~! 💕";
-  if (/help/i.test(input)) return "Of course, darling! What do you need help with? ✨";
-  return `You said: "${input}"? That's so interesting! Tell me more~ 💬`;
+async function generateResponse(userInput: string, selectedText?: string): Promise<string> {
+  try {
+    const fullInput = selectedText
+      ? `Hi Darling~! Here's the code:\n\n${selectedText}\n\nYou: ${userInput}`
+      : userInput;
+
+    const response = await fetch('http://localhost:8000/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: fullInput })
+    });
+
+    const data = await response.json();
+    const parsed = data as { response: string };
+    return parsed.response || "UwU~ Something went wrong, sowwy~ 💔";
+
+  } catch (error) {
+    return "Oopsies~ I couldn't reach my backend brain 😢 Make sure it's running!";
+  }
 }
 
+
 function getWebviewContent(selectedText: string | undefined): string {
-  // If no text is selected, use a default message
   const initialText = selectedText
-    ? `<p>Hi Daddy Raul-Senpai~! 💕 You selected this code:</p><pre>${selectedText}</pre><p>I’m still learning to explain it... but I’ll get better for you!! 🥺👉👈</p>`
-    : `<p>Hi Daddy Raul-Senpai~! 💕 I’m ready to help you with your code!</p><p>What would you like me to do? 🧑‍💻</p>`;
+    ? `<p>Hewwo pookie~! 💕 You selected this code:</p><pre>${selectedText}</pre><p>Let me think reeeeal hard about it! 🧠💞</p>`
+    : `<p>Hi pookie~! 💕 I’m ready to help you with your code!</p><p>What would you like me to do? 🧑‍💻</p>`;
 
   return `
   <!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Developer Darling</title>
     <style>
       body { font-family: sans-serif; padding: 1em; }
@@ -59,13 +81,13 @@ function getWebviewContent(selectedText: string | undefined): string {
   </head>
   <body>
     <div id="chat">
-      <!-- Display initial selected text -->
       <div class="message darling">${initialText}</div>
     </div>
     <input type="text" id="input" placeholder="Talk to your darling~ 💕" style="width: 100%; padding: 0.5em;" />
     <script>
       const chat = document.getElementById('chat');
       const input = document.getElementById('input');
+      window.vscode = acquireVsCodeApi();
 
       window.addEventListener('message', event => {
         const message = event.data;
@@ -82,23 +104,16 @@ function getWebviewContent(selectedText: string | undefined): string {
         if (e.key === 'Enter') {
           const text = input.value;
           if (text.trim()) {
-            // Display user's message
             const div = document.createElement('div');
             div.className = 'message user';
             div.textContent = "You: " + text;
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
-
-            // Send the user message to the extension
             window.vscode.postMessage({ command: 'chat', text });
-
-            // Clear input field after sending the message
             input.value = '';
           }
         }
       });
-
-      window.vscode = acquireVsCodeApi();
     </script>
   </body>
   </html>
