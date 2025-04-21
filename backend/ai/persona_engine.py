@@ -1,5 +1,5 @@
 from typing import Literal
-from AgentServices.assistant_agent import agent
+from AgentServices.assistant_agent import stream_graph_updates
 
 # Define supported personas and their traits
 PERSONAS = {
@@ -7,6 +7,8 @@ PERSONAS = {
     "assertive": {"style": "confident, direct, bold"},
     "silly": {"style": "playful, humorous, quirky"},
 }
+
+
 
 def generate_feedback(code_snippet: str, persona: Literal["shy", "assertive", "silly"]) -> str:
     """
@@ -24,7 +26,7 @@ def generate_feedback(code_snippet: str, persona: Literal["shy", "assertive", "s
         f"Please suggest improvements, best practices, or style tips. Format it as a friendly comment."
     )
 
-    response = agent.run(prompt)
+    response = stream_graph_updates(code_snippet)
 
     # Dummy feedback for now
     feedback = (
@@ -32,3 +34,15 @@ def generate_feedback(code_snippet: str, persona: Literal["shy", "assertive", "s
     )
 
     return feedback
+
+code_snippet = (
+    '''
+    def chatbot(state: State):
+        messages = [prompt] + state["messages"]
+        return {"messages": [llm.invoke(messages)]}
+    '''
+)
+
+print(generate_feedback(code_snippet, "shy"))
+print(generate_feedback(code_snippet, "assertive"))
+print(generate_feedback(code_snippet, "silly"))
