@@ -26,7 +26,7 @@ tools = [
     Tool(name="write_file", func=write_file, description="Write to a file"),
 ]
 
-llm = OllamaLLM(model="gemma3:1b", temperature=0.5, max_tokens=2000)
+llm = OllamaLLM(model="deepseek-r1", temperature=0.5, max_tokens=2000)
 
 style = "confident, direct, bold"
 
